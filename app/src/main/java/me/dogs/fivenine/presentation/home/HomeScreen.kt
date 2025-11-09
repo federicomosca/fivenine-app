@@ -53,12 +53,10 @@ fun HomeScreen(
                     list = list,
                     onClick = { onListClick(list.id) },
                     onLongPress = { listToDelete = list },
-                    onDelete = { listToDelete = list },
-                    modifier = Modifier.animateItemPlacement()
+                    onDelete = { listToDelete = list }
                 )
             }
-        }
-    }
+        }    }
 
     if (showDialog) {
         CreateListDialog(
@@ -106,9 +104,9 @@ fun ListCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dismissState = rememberDismissState(
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
-            if (it == DismissValue.DismissedToStart || it == DismissValue.DismissedToEnd) {
+            if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
                 onDelete()
                 true
             } else {
@@ -117,9 +115,9 @@ fun ListCard(
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        background = {
+        backgroundContent = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -132,25 +130,24 @@ fun ListCard(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-        },
-        dismissContent = {
-            Text(
-                text = "> ${list.name}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = onLongPress
-                    )
-                    .padding(8.dp)
-            )
         }
-    )
-}
+    ) {
+        Text(
+            text = "> ${list.name}",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongPress
+                )
+                .padding(8.dp)
+        )
+    }}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateListDialog(
     onDismiss: () -> Unit,
@@ -185,20 +182,17 @@ fun CreateListDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Type dropdown
                 ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
+                    onExpandedChange = { expanded = it }
                 ) {
                     TextField(
                         value = listTypes.find { it.first == selectedType }?.second ?: "Movies",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("type") },
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.primary,
-                            unfocusedTextColor = MaterialTheme.colorScheme.primary
-                        ),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
@@ -209,7 +203,7 @@ fun CreateListDialog(
                     ) {
                         listTypes.forEach { (value, label) ->
                             DropdownMenuItem(
-                                text = { Text(label, color = MaterialTheme.colorScheme.primary) },
+                                text = { Text(label) },
                                 onClick = {
                                     selectedType = value
                                     expanded = false

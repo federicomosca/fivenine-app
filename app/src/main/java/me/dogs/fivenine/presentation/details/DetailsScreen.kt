@@ -52,14 +52,11 @@ fun DetailsScreen(viewModel: DetailsViewModel, onBack: () -> Unit) {
                 ItemCard(
                     item = item,
                     onLongPress = { itemToEdit = item },
-                    onDelete = { itemToDelete = item },
-                    modifier = Modifier.animateItemPlacement()
+                    onDelete = { itemToDelete = item }
                 )
             }
-        }
-    }
+        }    }
 
-    // Add dialog
     if (showAddDialog) {
         when (listType) {
             "movie" -> FilmDialog(
@@ -100,7 +97,6 @@ fun DetailsScreen(viewModel: DetailsViewModel, onBack: () -> Unit) {
         }
     }
 
-    // Edit dialog
     itemToEdit?.let { item ->
         when (item) {
             is ListItem.Film -> FilmDialog(
@@ -146,7 +142,6 @@ fun DetailsScreen(viewModel: DetailsViewModel, onBack: () -> Unit) {
         }
     }
 
-    // Delete confirmation dialog
     itemToDelete?.let { item ->
         AlertDialog(
             onDismissRequest = { itemToDelete = null },
@@ -181,9 +176,9 @@ fun ItemCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dismissState = rememberDismissState(
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
-            if (it == DismissValue.DismissedToStart || it == DismissValue.DismissedToEnd) {
+            if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
                 onDelete()
                 true
             } else {
@@ -192,9 +187,9 @@ fun ItemCard(
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        background = {
+        backgroundContent = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -207,86 +202,84 @@ fun ItemCard(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-        },
-        dismissContent = {
-            Column(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .combinedClickable(
-                        onClick = {},
-                        onLongClick = onLongPress
+        }
+    ) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .combinedClickable(
+                    onClick = {},
+                    onLongClick = onLongPress
+                )
+                .padding(8.dp)
+        ) {
+            when (item) {
+                is ListItem.Film -> {
+                    Text(
+                        text = "> ${item.title}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    .padding(8.dp)
-            ) {
-                when (item) {
-                    is ListItem.Film -> {
-                        Text(
-                            text = "> ${item.title}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "  director: ${item.director} | year: ${item.year} | genre: ${item.genre}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    is ListItem.Restaurant -> {
-                        Text(
-                            text = "> ${item.name}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "  address: ${item.address} | type: ${item.type}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    is ListItem.Book -> {
-                        Text(
-                            text = "> ${item.title}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "  author: ${item.author} | year: ${item.year} | genre: ${item.genre}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    is ListItem.VideoGame -> {
-                        Text(
-                            text = "> ${item.title}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "  year: ${item.year} | publisher: ${item.publisher}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = "  platform: ${item.platform} | genre: ${item.genre}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    is ListItem.Custom -> {
-                        Text(
-                            text = "> ${item.data}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    Text(
+                        text = "  director: ${item.director} | year: ${item.year} | genre: ${item.genre}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                is ListItem.Restaurant -> {
+                    Text(
+                        text = "> ${item.name}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "  address: ${item.address} | type: ${item.type}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                is ListItem.Book -> {
+                    Text(
+                        text = "> ${item.title}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "  author: ${item.author} | year: ${item.year} | genre: ${item.genre}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                is ListItem.VideoGame -> {
+                    Text(
+                        text = "> ${item.title}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "  year: ${item.year} | publisher: ${item.publisher}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "  platform: ${item.platform} | genre: ${item.genre}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                is ListItem.Custom -> {
+                    Text(
+                        text = "> ${item.data}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
-    )
+    }
 }
 
-// Film Dialog
 @Composable
 fun FilmDialog(
     initialValues: ListItem.Film? = null,
@@ -365,7 +358,6 @@ fun FilmDialog(
     )
 }
 
-// Restaurant Dialog
 @Composable
 fun RestaurantDialog(
     initialValues: ListItem.Restaurant? = null,
@@ -429,7 +421,6 @@ fun RestaurantDialog(
     )
 }
 
-// Book Dialog
 @Composable
 fun BookDialog(
     initialValues: ListItem.Book? = null,
@@ -508,7 +499,6 @@ fun BookDialog(
     )
 }
 
-// VideoGame Dialog
 @Composable
 fun VideoGameDialog(
     initialValues: ListItem.VideoGame? = null,
@@ -598,7 +588,6 @@ fun VideoGameDialog(
     )
 }
 
-// Custom Item Dialog
 @Composable
 fun CustomItemDialog(
     initialData: String = "",
