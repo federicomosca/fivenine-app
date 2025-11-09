@@ -17,4 +17,20 @@ class HomeViewModel(private val database: AppDatabase) : ViewModel() {
             database.listDao().insertList(ListEntity(name = name, type = type))
         }
     }
+
+    fun deleteList(list: ListEntity) {
+        viewModelScope.launch {
+            // Delete the list itself
+            database.listDao().deleteList(list)
+
+            // Delete all items associated with the list based on its type
+            when (list.type) {
+                "movie" -> database.filmDao().deleteFilmsByListId(list.id)
+                "restaurant" -> database.restaurantDao().deleteRestaurantsByListId(list.id)
+                "book" -> database.bookDao().deleteBooksByListId(list.id)
+                "videogame" -> database.videoGameDao().deleteVideoGamesByListId(list.id)
+                "custom" -> database.customItemDao().deleteCustomItemsByListId(list.id)
+            }
+        }
+    }
 }
