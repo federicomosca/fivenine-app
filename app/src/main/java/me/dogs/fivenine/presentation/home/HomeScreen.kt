@@ -48,15 +48,26 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
-            items(lists, key = { it.id }) { list ->
-                ListCard(
-                    list = list,
-                    onClick = { onListClick(list.id) },
-                    onLongPress = { listToDelete = list },
-                    onDelete = { listToDelete = list }
-                )
-            }
-        }    }
+            items(lists.chunked(2), key = { it.first().id }) { rowLists ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    rowLists.forEach { list ->
+                        Box(modifier = Modifier.weight(1f)) {
+                            ListCard(
+                                list = list,
+                                onClick = { onListClick(list.id) },
+                                onLongPress = { listToDelete = list },
+                                onDelete = { listToDelete = list }
+                            )
+                        }
+                    }
+                    if (rowLists.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }}}
 
     if (showDialog) {
         CreateListDialog(
@@ -132,19 +143,23 @@ fun ListCard(
             }
         }
     ) {
-        Text(
-            text = "> ${list.name}",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
+        Surface(
             modifier = modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
+                .heightIn(min = 56.dp)
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongPress
-                )
-                .padding(8.dp)
-        )
+                ),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Text(
+                text = "> ${list.name}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }}
 
 @OptIn(ExperimentalMaterial3Api::class)
