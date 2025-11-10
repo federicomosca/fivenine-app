@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.dogs.fivenine.data.model.ListEntity
@@ -37,37 +38,43 @@ fun HomeScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "> [+] new list",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier
-                .clickable { showDialog = true }
-                .padding(8.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // Combine "new list" card with existing lists in a grid
+        val allItems = listOf<ListEntity?>(null) + lists // null represents the "new list" card
 
-        LazyColumn {
-            items(lists.chunked(2), key = { it.first().id }) { rowLists ->
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(allItems.chunked(2)) { rowItems ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    rowLists.forEach { list ->
+                    rowItems.forEach { item ->
                         Box(modifier = Modifier.weight(1f)) {
-                            ListCard(
-                                list = list,
-                                onClick = { onListClick(list.id) },
-                                onLongPress = { listToDelete = list },
-                                onDelete = { listToDelete = list }
-                            )
+                            if (item == null) {
+                                // "New List" card
+                                NewListCard(
+                                    onClick = { showDialog = true }
+                                )
+                            } else {
+                                // Regular list card
+                                ListCard(
+                                    list = item,
+                                    onClick = { onListClick(item.id) },
+                                    onLongPress = { listToDelete = item },
+                                    onDelete = { listToDelete = item }
+                                )
+                            }
                         }
                     }
-                    if (rowLists.size == 1) {
+                    // Add spacer if row has only 1 item
+                    if (rowItems.size == 1) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-            }}}
+            }
+        }
+    }
 
     if (showDialog) {
         CreateListDialog(
@@ -103,6 +110,31 @@ fun HomeScreen(
                 )
             }
         )
+    }
+}
+
+@Composable
+fun NewListCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(1f) // Make it square
+            .clickable { onClick() },
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "> [+] new list",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
     }
 }
 
@@ -146,19 +178,23 @@ fun ListCard(
         Surface(
             modifier = modifier
                 .fillMaxWidth()
-                .heightIn(min = 56.dp)
+                .aspectRatio(1f) // Make it square
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = onLongPress
                 ),
             color = MaterialTheme.colorScheme.background
         ) {
-            Text(
-                text = "> ${list.name}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(16.dp)
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "> ${list.name}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }}
 
